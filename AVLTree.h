@@ -1,3 +1,9 @@
+//
+// Created by omerg on 05/05/2021.
+//
+
+#ifndef WET1_AVLTREE_H
+#define WET1_AVLTREE_H
 #ifndef HW1Wet_AVLTREE_H
 #define HW1Wet_AVLTREE_H
 
@@ -8,6 +14,7 @@
 using std::max;
 using std::endl;
 using std::cout;
+
 
 /*------------------------------------------------------------------------------
 ------------------------------------AVLNode-------------------------------------
@@ -30,6 +37,7 @@ public:
     ~AVLNode(); //destructor
 
 };
+
 
 /*------------------------------------------------------------------------------
 ------------------------------------AVLTree-------------------------------------
@@ -65,7 +73,20 @@ public:
     void clearTree();
     //print all nodes of the tree in ascending order
     void printTree();
+
+
+    typedef void(*DoSome)(AVLNode<Key,Data>& node,void* args) ;
+
+    void inOrder(AVLNode<Key,Data>& node, DoSome doSome, void* args){
+        if(node== nullptr)return;
+        inOrder(node.left, doSome, args);
+        doSome(node, args);
+        inOrder(node.right, doSome , args);
+    }
+
 };
+
+
 
 /*------------------------------------------------------------------------------
 -----------------------------AVLNode-Implementation-----------------------------
@@ -73,7 +94,7 @@ public:
 
 template <class Key, class Data>
 AVLNode<Key, Data>::AVLNode(Key k, Data d): key(k), data(d), height(0), bf(0),
-                            parent(nullptr), left(nullptr), right(nullptr){}
+                                            parent(nullptr), left(nullptr), right(nullptr){}
 
 /*----------------------------------------------------------------------------*/
 
@@ -343,7 +364,7 @@ void AVLTree<Key, Data>::printTree()
         printSubTree(this->root->left);
     }
 
-cout<<this->root->key<<" BF: "<<this->root->bf<<" Height: "<<this->root->height<<endl;
+    cout<<this->root->key<<" BF: "<<this->root->bf<<" Height: "<<this->root->height<<endl;
 
     if (this->root->right != nullptr){
         printSubTree(this->root->right);
@@ -367,7 +388,6 @@ AVLTree<Key, Data>::nextNodeInOrder(AVLNode<Key, Data> *current) {
         if (current->right->key != this->lastInOrder->key){
             this->lastInOrder = current;
             if (!current->left){
-
                 current->right;
             }
         }
@@ -382,7 +402,6 @@ AVLTree<Key, Data>::nextNodeInOrder(AVLNode<Key, Data> *current) {
             return nullptr;
         }
     }
-
     if (current->left != nullptr){
         if (current->left->key == this->lastInOrder->key){
             this->lastInOrder = current;
@@ -392,7 +411,6 @@ AVLTree<Key, Data>::nextNodeInOrder(AVLNode<Key, Data> *current) {
             return this->lastInOrder->parent;
         }
     }
-
     return nullptr;
 }
  */
@@ -411,22 +429,22 @@ void rebalanceTreeAfterInsert(AVLTree<Key,Data> *tree, AVLNode<Key,Data> *n)
         updateNodeBF(n->parent);
 
         if (n->parent->bf == 2 && n->parent->left != nullptr
-                && n->parent->left->bf >= 0){
+            && n->parent->left->bf >= 0){
             tree->LLrotate(n->parent);
             return;
         }
         if (n->parent->bf == 2 && n->parent->left != nullptr
-                && n->parent->left->bf == -1){
+            && n->parent->left->bf == -1){
             tree->LRrotate(n->parent);
             return;
         }
         if (n->parent->bf == -2 && n->parent->right != nullptr
-                && n->parent->right->bf == 1){
+            && n->parent->right->bf == 1){
             tree->RLrotate(n->parent);
             return;
         }
         if (n->parent->bf == -2 && n->parent->right != nullptr
-                && n->parent->right->bf <= 0){
+            && n->parent->right->bf <= 0){
             tree->RRrotate(n->parent);
             return;
         }
@@ -654,7 +672,7 @@ static void swapNodes(AVLNode<Key, Data> *n1, AVLNode<Key, Data> *n2){
 
 template<class Key, class Data>
 static void swapSonAndParent(AVLNode<Key, Data> *son, AVLNode<Key,
-                             Data> *parent)
+        Data> *parent)
 {
     int son_is_left_son_of_parent = isLeftSon(son);
 
@@ -698,7 +716,7 @@ static void swapSonAndParent(AVLNode<Key, Data> *son, AVLNode<Key,
 
 template<class Key, class Data>
 static void swapSeparateNodes(AVLNode<Key, Data> *n1, AVLNode<Key,
-                              Data> *n2)
+        Data> *n2)
 {
     if (n1->left != nullptr)    n1->left->parent = n2;
 
@@ -748,10 +766,10 @@ static void updateNodeHeight(AVLNode<Key, Data> *n){
     if (n->left == nullptr && n->right == nullptr)  n->height = 0;
 
     else if (n->left == nullptr && n->right != nullptr)
-            n->height = 1+n->right->height;
+        n->height = 1+n->right->height;
 
     else if (n->left != nullptr && n->right == nullptr)
-            n->height = 1+n->left->height;
+        n->height = 1+n->left->height;
 
     else    n->height = 1 + max(n->left->height, n->right->height);
 }
@@ -778,7 +796,7 @@ static void updateNodeBF(AVLNode<Key, Data> *n)
         left_son_height = 1 + n->left->height;
         right_son_height = 1 + n->right->height;
     }
-        n->bf = left_son_height - right_son_height;
+    n->bf = left_son_height - right_son_height;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -812,3 +830,4 @@ static void printSubTree(AVLNode<Key, Data> *root)
 }
 
 #endif //HW1Wet_AVLTREE_H
+#endif //WET1_AVLTREE_H
