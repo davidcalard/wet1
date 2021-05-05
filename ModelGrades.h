@@ -12,21 +12,29 @@ class ModelGrades {
     int modelID;
 
     ModelGrades(int carID, int modelID): carID(carID), modelID(modelID){}
+    bool operator> (ModelGrades b) const{
+        if(this->grade > b.grade)return true;
+        else if (this->grade < b.grade)return false;
+        else if(this->carID > b.carID)return true;
+        else if (this->carID < b.carID) return false;
+        else return (this->modelID > b.modelID);
+    }
+    bool operator== (ModelGrades b) const{
+        return (this->grade==b.grade);
+    }
+
+
+    bool operator< (ModelGrades b) const {
+        if(this->grade < b.grade)return true;
+        else if (this->grade > b.grade)return false;
+        else if(this->grade < b.carID)return true;
+        else if (this->carID > b.carID) return false;
+        else return (this->modelID < b.modelID);
+    }
 
 };
 
-bool operator> (ModelGrades a, ModelGrades b){
-    if(a.grade > b.grade)return true;
-    else if (a.grade < b.grade)return false;
-    else if(a.carID > b.carID)return true;
-    else if (a.carID < b.carID) return false;
-    else return (a.modelID > b.modelID);
-}
-bool operator== (ModelGrades a, ModelGrades b){
-}
-}
-bool operator< (ModelGrades a, ModelGrades b){
-    return !(a>b);
+
 
 
 
