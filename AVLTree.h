@@ -80,11 +80,13 @@ public:
 
     typedef void(*DoSome)(AVLNode<Key,Data>& node,void* args) ;
 
-    void inOrder(AVLNode<Key,Data>& node, DoSome doSome, void* args){
-        if(node== nullptr)return;
-        inOrder(node.left, doSome, args);
+     void inOrder(AVLNode<Key,Data>& node, DoSome doSome, void* args, int cycles){
+        if(node== nullptr||cycles == 0)return;
+        inOrder(node.left, doSome, args,cycles-1);
+        cycles-=1;
         doSome(node, args);
-        inOrder(node.right, doSome , args);
+        inOrder(node.right, doSome , args,cycles-1);
+        cycles-=1;
     }
 
 };
