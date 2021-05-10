@@ -16,6 +16,36 @@ StatusType AddCarType(void *DS, int typeID, int numOfModels){
     ourDS->cars.insertNode(typeID,new_car);
 }
 
+StatusType RemoveCarType(void *DS, int typeID){
+    if(!DS||typeID<=0) return INVALID_INPUT;
+    auto* CDM=(CarDealershipManager*)DS;
+    if(CDM->cars.findNode(typeID)== nullptr)return FAILURE;
+    CDM->cars.removeNode(typeID);
+    return SUCCESS;
+}
+
+
+StatusType MakeComplaint(void *DS, int typeID, int modelID, int t){
+    if(!DS||typeID<=0||modelID<0) return INVALID_INPUT;
+    auto* CDM=(CarDealershipManager*)DS;
+    Car* car=&CDM->cars.findNode(typeID)->data;
+    if(car== nullptr)return FAILURE;
+    if(car->models_num<modelID)return INVALID_INPUT;
+    int oldGrade=car->sales[modelID];
+    car->sales[modelID]-= 100/t;
+    int NewGrade=car->sales[modelID];
+    CDM->models_grades.findNode(oldGrade)->data.removeNode(oldGrade);
+    AVLNode<int,AVLTree<ModelGrades,ModelGrades>>* grade=CDM->models_grades.findNode(NewGrade);
+    if(grade!= nullptr) grade->data.insertNode
+    (ModelGrades(typeID,modelID),ModelGrades(typeID,modelID));
+    else {
+        CDM->models_grades.insertNode(NewGrade,AVLTree<ModelGrades,ModelGrades>());
+        CDM->models_grades.findNode(NewGrade)->data.insertNode
+        (ModelGrades(typeID,modelID),ModelGrades(typeID,modelID));
+    }
+    return SUCCESS;
+}
+
 /*
  * StatusType GetBestSellerModelByType(void *DS, int typeID, int * modelID){
     if(DS== nullptr || typeID<0)return INVALID_INPUT;
