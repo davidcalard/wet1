@@ -33,6 +33,7 @@ public:
     AVLNode *left;
     AVLNode *right;
 
+
     AVLNode(Key k, Data d); //constructor
     ~AVLNode(); //destructor
 
@@ -48,7 +49,8 @@ class AVLTree
 {
 public:
     AVLNode<Key,Data> *root = nullptr;
-    //AVLNode<Key,Data> *lastInOrder = nullptr;
+    AVLNode<Key,Data> *min = nullptr;
+
     AVLTree(); //constructor
     ~AVLTree(); //destructor
 
@@ -60,6 +62,7 @@ public:
     AVLNode<Key,Data> *findNode(Key k);
     //updates root tree
     void updateRoot(AVLNode<Key,Data> *n);
+    void updateMin(AVLNode<Key,Data> *n);
     //finde next node in order
     AVLNode<Key,Data> *nextNodeInOrder(AVLNode<Key,Data> *current);
 
@@ -136,6 +139,7 @@ void AVLTree<Key, Data>::insertNode(Key k, Data d){
                 updateNodeHeight(sub_root->left);
                 updateNodeBF(sub_root);
                 rebalanceTreeAfterInsert(this, sub_root->left);
+                if(!this->min||k < this->min->key) updateMin(sub_root->left);
                 return;
             }
         }
@@ -162,6 +166,7 @@ template<class Key, class Data>
 void AVLTree<Key, Data>::removeNode(Key k){
     AVLNode<Key, Data> *toRemove = findNode(k);
     if (toRemove == nullptr) return; //k does not exist in the tree
+    if (toRemove == this->min) updateMin(this->min->parent);
     if (isLeaf(toRemove)){
         leafRemove(this, toRemove);
         return;
@@ -215,6 +220,13 @@ template<class Key, class Data>
 void AVLTree<Key, Data>::updateRoot(AVLNode<Key, Data> *n) {
     this->root = n;
     n->parent = nullptr;
+}
+
+/*----------------------------------------------------------------------------*/
+
+template<class Key, class Data>
+void AVLTree<Key, Data>::updateMin(AVLNode<Key, Data> *n) {
+    this->min = n;
 }
 
 /*----------------------------------------------------------------------------*/
