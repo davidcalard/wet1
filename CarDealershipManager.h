@@ -2,6 +2,7 @@
 // Created by omerg on 05/05/2021.
 //
 
+
 #ifndef WET1_CARDEALERSHIPMANAGER_H
 #define WET1_CARDEALERSHIPMANAGER_H
 
@@ -26,20 +27,14 @@ public:
 
 class CarDealershipManager {
     AVLTree<CarID,Car> cars;
-    AVLTree<ModelGrades,ModelGrades> models_grades;
+    AVLTree<int,AVLTree<ModelGrades,ModelGrades>> models_grades;
     std::pair<int,int> best_c_seller;
-
-
-    void * Init();
-    StatusType AddCarType (void *DS, int typeID, int numOfModels);
 
 };
 
-StatusType CarDealershipManager::AddCarType(void *DS, int typeID, int numOfModels){
-    if(!DS||typeID>0||) return FAILURE;         //bad argument
-    CarDealershipManager *ourDS = static_cast<CarDealershipManager*>(DS);
-    Car new_car(numOfModels);
-    ourDS->cars.insertNode(typeID,new_car);
-}
+
 
 #endif //WET1_CARDEALERSHIPMANAGER_H
+
+
+
