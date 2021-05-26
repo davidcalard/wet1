@@ -14,6 +14,7 @@ StatusType AddCarType(void *DS, int typeID, int numOfModels){
     CarDealershipManager *ourDS = static_cast<CarDealershipManager*>(DS);
     Car new_car(numOfModels);
     ourDS->cars.insertNode(typeID,new_car);
+    return SUCCESS;
 }
 
 StatusType RemoveCarType(void *DS, int typeID){
@@ -66,33 +67,40 @@ StatusType SellCar(void *DS, int typeID, int modelID){
 }
 
 StatusType GetBestSellerModelByType(void *DS, int typeID, int * modelID){
-    /*
-    if(DS== nullptr || typeID<0)return INVALID_INPUT;
+
+    if(DS==nullptr || typeID<0 || modelID==nullptr)return INVALID_INPUT;
     auto* CDM=(CarDealershipManager*)DS;
     if(typeID==0){
-        *modelID= CDM->getBestSellerTypeId();
+        if(CDM->best_c_seller == std::make_pair(0,0))   return FAILURE; //empty system
+        *modelID= CDM->best_c_seller.first;
         return SUCCESS;
     }
-     */
+    auto our_car = CDM->cars.findNode(typeID);
+    if(our_car == nullptr)return FAILURE; // typeID car not in system
+    *modelID = our_car->data.best_m_seller.first;
     return SUCCESS;
-    ///car = CDM.CArsTree.find(key=typeID);
-    ///if(car==null)return fail
-    ///*modelID=car.best;
-    ///SUCCESS
 }
 
 StatusType GetWorstModels(void *DS, int numOfModels , int *types, int *models){
-    /*if(DS== nullptr || numOfModels<=0)return INVALID_INPUT;
+    if(DS== nullptr || numOfModels<=0)return INVALID_INPUT;
     auto* CDM=(CarDealershipManager*)DS;
     auto father = CDM->models_grades.min;
+    int cycles=numOfModels;
+
     do
-    father->data.min   /*inner tree*/
+    {
+        auto innerMin= father->data.min;
+        father->data.smallinOrder(innerMin,types,models,&cycles);  /*inner tree*/
+        if(father->right != nullptr && cycles!=0){/*bigger tree*/
+            CDM->models_grades.biginOrder(father->right,types,models,&cycles);
+        }
+        father= father->parent;
+    }while(father!= nullptr && cycles!= 0);
+
     return SUCCESS;
-
-///if(father.right.preOrder()) /*bigger tree*/
-///father= father.father;
-///while(father!= nullptr)
-
 }
 
-void Quit(void **DS){}
+void Quit(void **DS){
+    auto* CDM=(CarDealershipManager**)DS;
+    delete CDM;
+}

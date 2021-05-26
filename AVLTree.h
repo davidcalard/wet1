@@ -77,19 +77,39 @@ public:
     //print all nodes of the tree in ascending order
     void printTree();
 
-
-    typedef void(*DoSome)(AVLNode<Key,Data>& node,void* args) ;
-
-    void inOrder(AVLNode<Key,Data>& node, DoSome doSome, void* args, int cycles){
-        if(node== nullptr||cycles == 0)return;
-        inOrder(node.left, doSome, args,cycles-1);
-        cycles-=1;
-        doSome(node, args);
-        inOrder(node.right, doSome , args,cycles-1);
-        cycles-=1;
+    void biginOrder(AVLNode<Key,Data>* node,int* arg1,int* arg2, int* cycles){
+        if(node== nullptr|| *cycles == 0)return;
+        biginOrder(node->left, arg1,arg2,cycles);
+        compInOrder(node, arg1,arg2,cycles);
+        biginOrder(node->right, arg1,arg2,cycles);
     }
 
+    void smallinOrder(AVLNode<Key,Data>* node,int* arg1,int* arg2,int *cycles){
+        if(node->left== nullptr || *cycles == 0)return;
+        smallinOrder(node->left, arg1,arg2,cycles);
+        *cycles-=1;
+        arg1[0]=(int)(node->key); arg1++;
+        arg2[0]=(int)(node->data); arg2++;
+        if(node->right== nullptr)return;
+        smallinOrder(node->right, arg1,arg2,cycles);
+    }
+
+    void compInOrder(AVLNode<Key,AVLTree<Key,Data>>* node,int* arg1,int* arg2,int *cycles){
+        if(node== nullptr)return;
+        ///why dont work?
+        auto minim= node->data.min;
+        node->data.smallinOrder();
+        do
+        {
+            if(node->right != nullptr){/*bigger tree*/
+                smallinOrder(node->right,arg1,arg2,cycles);
+            }
+            node= node->parent;
+        }while(node != nullptr && *cycles!= 0);
+
+    }
 };
+
 
 
 
