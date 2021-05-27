@@ -37,6 +37,15 @@ public:
     AVLNode(Key k, Data d); //constructor
     ~AVLNode(); //destructor
 
+    void fillTree(int* num){
+        if(this== nullptr|| (*num)<0)return ;
+        this->right->fillTree(num);
+        (*num)-=1;
+        this->key=(*num);
+        this->data=(*num);
+        this->left->fillTree(num);
+    }
+
 };
 
 
@@ -53,6 +62,11 @@ public:
 
     AVLTree(); //constructor
     ~AVLTree(); //destructor
+    AVLTree(AVLNode<Key,Data>* root):root(root){
+        auto node=root;
+        while (node =! nullptr) node=node->left;
+        min(node);
+    }
 
     //insert Node into the right place in the tree while maintain the balance
     void insertNode(Key k, Data d);
@@ -77,37 +91,69 @@ public:
     //print all nodes of the tree in ascending order
     void printTree();
 
-    void biginOrder(AVLNode<Key,Data>* node,int* arg1,int* arg2, int* cycles){
-        if(node== nullptr|| *cycles == 0)return;
-        biginOrder(node->left, arg1,arg2,cycles);
-        compInOrder(node, arg1,arg2,cycles);
-        biginOrder(node->right, arg1,arg2,cycles);
-    }
 
-    void smallinOrder(AVLNode<Key,Data>* node,int* arg1,int* arg2,int *cycles){
-        if(node->left== nullptr || *cycles == 0)return;
-        smallinOrder(node->left, arg1,arg2,cycles);
+    void inOrder(AVLNode<Key,Data>* node,void (*func)(AVLNode<Key,Data>* node,int* arg1,int* arg2),
+            int* arg1,int* arg2,int *cycles){
+        if(node== nullptr || *cycles == 0)return;
+        inOrder(node->left,func, arg1,arg2,cycles);
         *cycles-=1;
-        arg1[0]=(int)(node->key); arg1++;
-        arg2[0]=(int)(node->data); arg2++;
-        if(node->right== nullptr)return;
-        smallinOrder(node->right, arg1,arg2,cycles);
+        func(node,arg1,arg2);
+        inOrder(node->right,func, arg1,arg2,cycles);
     }
 
-    void compInOrder(AVLNode<Key,AVLTree<Key,Data>>* node,int* arg1,int* arg2,int *cycles){
-        if(node== nullptr)return;
-        ///why dont work?
-        auto minim= node->data.min;
-        node->data.smallinOrder();
-        do
-        {
-            if(node->right != nullptr){/*bigger tree*/
-                smallinOrder(node->right,arg1,arg2,cycles);
+    int pow2(int n) {
+        int res=1;
+        while (n>0){
+            res*=2;
+            n--;
+        }
+        return res;
+    }
+
+
+
+    AVLNode<Key,Data>* completeTree(int nodes_num){
+        if(nodes_num==0)return nullptr;
+        int log2n=0,tmp=nodes_num;
+        while (tmp!=0){
+            tmp=tmp/2;
+            log2n++;
+        }
+        int hight= log2n-1;
+        if(hight<0)return nullptr;
+        AVLNode<Key,Data>* avLnode= new AVLNode<int,int>(-1,-1);
+
+        AVLNode<Key,Data>* tmp_right= completeTree(hight-1);
+        avLnode->right=tmp_right;
+        if(tmp_right!= nullptr)tmp_right->parent=avLnode;
+
+        AVLNode<Key,Data>* tmp_left= completeTree(hight-1) ;
+        avLnode->left=tmp_left;
+        if(tmp_left!= nullptr)tmp_left->parent=avLnode;
+
+        avLnode->height=hight;
+        return avLnode;
+    }
+
+    void deleteForComplete(int* num_toDel) {
+        if(this == nullptr ||  (*num_toDel)<=0)return;
+        this->right->deleteForComplete(num_toDel);
+        if(this->isLeaf()) {
+            (*num_toDel) -= 1;
+            if (this->parent->right != nullptr) {
+                this->parent->right=nullptr;
+                delete this;
+            } else {
+                this->parent->left=nullptr;
+                delete this;
             }
-            node= node->parent;
-        }while(node != nullptr && *cycles!= 0);
-
+            return;
+        }
+        this->left->deleteForComplete(num_toDel);
     }
+
+
+
 };
 
 

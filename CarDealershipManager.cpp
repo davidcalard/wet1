@@ -10,17 +10,28 @@ void* Init(){
 }
 
 StatusType AddCarType(void *DS, int typeID, int numOfModels){
-    if(!DS||typeID<=0||numOfModels<=0) return FAILURE;         //bad argument
-    CarDealershipManager *ourDS = static_cast<CarDealershipManager*>(DS);
-    Car new_car(numOfModels);
+    if(!DS || typeID<=0 || numOfModels<=0) return FAILURE;         //bad argument
+    auto ourDS = (CarDealershipManager*)DS;
+    auto new_car= Car(numOfModels,typeID);
     ourDS->cars.insertNode(typeID,new_car);
+    printf("HERE");
+    ///zero tree for later...
+    /*
+    auto zero_tree= AVLTree<ModelGrades,ModelGrades>(ourDS->models_grades.min->data.completeTree(numOfModels));
+    zero_tree.deleteForComplete()
+    ourDS->zero_models.insertNode(typeID,zero_tree);
+    */
     return SUCCESS;
 }
 
 StatusType RemoveCarType(void *DS, int typeID){
     if(!DS||typeID<=0) return INVALID_INPUT;
     auto* CDM=(CarDealershipManager*)DS;
+    auto car=CDM->cars.findNode(typeID);
     if(CDM->cars.findNode(typeID)== nullptr)return FAILURE;
+    for(int i=0;i<car->data.models_num;i++){
+        CDM->models_grades.removeNode(car->data.models[i]);
+    }
     CDM->cars.removeNode(typeID);
     return SUCCESS;
 }
@@ -28,22 +39,16 @@ StatusType RemoveCarType(void *DS, int typeID){
 
 StatusType MakeComplaint(void *DS, int typeID, int modelID, int t){
     if(!DS||typeID<=0||modelID<0) return INVALID_INPUT;
-    auto* CDM=(CarDealershipManager*)DS;
-    Car* car=&CDM->cars.findNode(typeID)->data;
-    if(car== nullptr)return FAILURE;
+    auto CDM=(CarDealershipManager*)DS;
+    auto car_n= CDM->cars.findNode(typeID);
+    if(car_n== nullptr)return FAILURE;
+    auto car=&car_n->data;
     if(car->models_num<modelID)return INVALID_INPUT;
-    int oldGrade=car->sales[modelID];
-    car->sales[modelID]-= 100/t;
-    int NewGrade=car->sales[modelID];
-    CDM->models_grades.findNode(oldGrade)->data.removeNode(ModelGrades(typeID,oldGrade));
-    AVLNode<int,AVLTree<ModelGrades,ModelGrades>>* grade=CDM->models_grades.findNode(NewGrade);
-    if(grade!= nullptr) grade->data.insertNode
-                (ModelGrades(typeID,modelID),ModelGrades(typeID,modelID));
-    else {
-        CDM->models_grades.insertNode(NewGrade,AVLTree<ModelGrades,ModelGrades>());
-        CDM->models_grades.findNode(NewGrade)->data.insertNode
-                (ModelGrades(typeID,modelID),ModelGrades(typeID,modelID));
-    }
+    auto oldGrade=car->models[modelID];
+    car->models[modelID].grade-= 100/t;
+    auto NewGrade=car->models[modelID];
+    CDM->models_grades.removeNode(oldGrade);
+    CDM->models_grades.insertNode(NewGrade,NewGrade);
     return SUCCESS;
 }
 
@@ -81,26 +86,30 @@ StatusType GetBestSellerModelByType(void *DS, int typeID, int * modelID){
     return SUCCESS;
 }
 
+void helper(AVLNode<ModelGrades,ModelGrades>* node,int *types, int *models){
+    types[0]=node->data.carID;types++;
+    models[0]=node->data.modelID;models++;
+}
+
 StatusType GetWorstModels(void *DS, int numOfModels , int *types, int *models){
     if(DS== nullptr || numOfModels<=0)return INVALID_INPUT;
     auto* CDM=(CarDealershipManager*)DS;
     auto father = CDM->models_grades.min;
+    if(father== nullptr)return INVALID_INPUT;
     int cycles=numOfModels;
-
     do
     {
-        auto innerMin= father->data.min;
-        father->data.smallinOrder(innerMin,types,models,&cycles);  /*inner tree*/
+        helper(father,types,models);
+        cycles--;
         if(father->right != nullptr && cycles!=0){/*bigger tree*/
-            CDM->models_grades.biginOrder(father->right,types,models,&cycles);
+            CDM->models_grades.inOrder(father->right,helper,types,models,&cycles);
         }
         father= father->parent;
     }while(father!= nullptr && cycles!= 0);
-
     return SUCCESS;
 }
 
 void Quit(void **DS){
-    auto* CDM=(CarDealershipManager**)DS;
+    auto CDM=(CarDealershipManager**)DS;
     delete CDM;
 }
