@@ -261,6 +261,7 @@ static errorType OnMakeComplaint(void* DS, const char* const command) {
     return error_free;
 }
 
+
 static errorType OnGetBestSellerModelByType(void* DS, const char* const command) {
     int typeID, modelID;
     ValidateRead(sscanf(command, "%d", &typeID), 1, "%s failed.\n", commandStr[GETBESTSELLERMODELBYTYPE_CMD]);
