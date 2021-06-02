@@ -20,7 +20,7 @@ public:
 
     OrderedListNode(int object, OrderedListNode* prev= nullptr, OrderedListNode* next= nullptr):
              object(object),prev(prev),next(next){}
-    OrderedListNode(const OrderedListNode& node):prev(nullptr),next(nullptr),object(0){}
+    OrderedListNode(const OrderedListNode& node):object(0),prev(nullptr),next(nullptr){}
     ~OrderedListNode(){
         prev= nullptr;
         next= nullptr;

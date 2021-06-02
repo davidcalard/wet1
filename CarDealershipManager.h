@@ -44,8 +44,9 @@ public:
     int models_num; //num of models
     Sales_num* sales;//num of sales of each model
     ModelGrades* models;
-    std::pair<index,Sales_num> best_m_seller = std::make_pair(0,0);
+    ModelGrades best_m_seller = ModelGrades(0,0,-1);
     Car(int n, CarID carId):models_num(n){
+        best_m_seller.carID=carId;
         sales = new int[n];
         models = new ModelGrades[n];
         for(int i=0;i<n;i++) {
@@ -74,17 +75,16 @@ public:
 };
 
 
-
-
 class CarDealershipManager {
 public:
     AVLTree<ModelGrades,ModelGrades>* models_grades;
-    std::pair<CarID ,Sales_num> best_c_seller = std::make_pair(0,0);
+    ModelGrades best_c_seller = ModelGrades(0,0,-1);
     AVLTree<CarID,Car>* cars;
     AVLTree<CarID,ZeroCar>* zero_models;
+    int models_number;
 
     CarDealershipManager():models_grades(new AVLTree<ModelGrades,ModelGrades>()),
-    cars(new AVLTree<CarID,Car>()),zero_models(new AVLTree<CarID,ZeroCar>()){};
+    cars(new AVLTree<CarID,Car>()),zero_models(new AVLTree<CarID,ZeroCar>()),models_number(0){};
     ~CarDealershipManager(){
         if(models_grades) delete models_grades;
         if(cars) delete cars;

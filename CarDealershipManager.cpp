@@ -10,13 +10,14 @@ void*  CarDealershipManager::CDMInit(){
 }
 
 StatusType CarDealershipManager::CDMAddCarType(void *DS, int typeID, int numOfModels){
-    if(!DS || typeID<=0 || numOfModels<=0) return INVALID_INPUT;         //bad argument
+    if(!DS || typeID<=0 || numOfModels<=0) return INVALID_INPUT;//bad argument
     auto ourDS = (CarDealershipManager*)DS;
     if(ourDS->cars->findNode(typeID)!= nullptr)return FAILURE;
     Car new_car(numOfModels,typeID);
     ourDS->cars->insertNode(typeID,new_car);
     auto zero=ZeroCar(numOfModels);
-    ourDS->zero_models->insertNode(typeID,zero);///problem in insert
+    ourDS->zero_models->insertNode(typeID,zero);
+    ourDS->models_number+=numOfModels;
     return SUCCESS;
 }
 
@@ -29,6 +30,7 @@ StatusType CarDealershipManager::CDMRemoveCarType(void *DS, int typeID){
     for(int i=0;i<car->data.models_num;i++){
         CDM->models_grades->removeNode(car->data.models[i]);
     }
+    CDM->models_number-=car->data.models_num;
     CDM->cars->removeNode(typeID);
     if(zero_car!= nullptr)CDM->zero_models->removeNode(typeID);
     return SUCCESS;
@@ -41,7 +43,7 @@ StatusType CarDealershipManager::CDMMakeComplaint(void *DS, int typeID, int mode
     auto car_n= CDM->cars->findNode(typeID);
     if(car_n== nullptr)return FAILURE;
     auto car=&car_n->data;
-    if(car->models_num<modelID)return FAILURE;
+    if(car->models_num<=modelID)return FAILURE;
     auto oldGrade=car->models[modelID];
     car->models[modelID].grade-= 100/t;
     auto NewGrade=car->models[modelID];
@@ -59,24 +61,33 @@ StatusType CarDealershipManager::CDMSellCar(void *DS, int typeID, int modelID){
 
     if(!car_to_sell->data.updateSales(modelID))return FAILURE;//modelID > numOfModels
     auto oldModel=car_to_sell->data.models[modelID];
+    oldModel.grade-=10;
 
-    if(car_to_sell->data.best_m_seller.second == car_to_sell->data.sales[modelID])// update best_m_seller if needed
-        if(modelID < car_to_sell->data.best_m_seller.first){
-            car_to_sell->data.best_m_seller.first = modelID;
-            car_to_sell->data.best_m_seller.second = car_to_sell->data.sales[modelID];
+    if(car_to_sell->data.best_m_seller.grade == car_to_sell->data.sales[modelID]) {// update best_m_seller if needed
+        if (modelID < car_to_sell->data.best_m_seller.modelID) {
+            car_to_sell->data.best_m_seller.modelID = modelID;
+            car_to_sell->data.best_m_seller.grade = car_to_sell->data.sales[modelID];
         }
-    if((car_to_sell->data.best_m_seller.second < car_to_sell->data.sales[modelID])){
-        car_to_sell->data.best_m_seller.first = modelID;
-        car_to_sell->data.best_m_seller.second = car_to_sell->data.sales[modelID];
     }
-    if(ourDS->best_c_seller.second == car_to_sell->data.sales[modelID])
-        if(typeID < ourDS->best_c_seller.first){
-            ourDS->best_c_seller.first = typeID;
-            ourDS->best_c_seller.second = car_to_sell->data.sales[modelID];
+
+    if((car_to_sell->data.best_m_seller.grade < car_to_sell->data.sales[modelID])){
+        car_to_sell->data.best_m_seller.modelID = modelID;
+        car_to_sell->data.best_m_seller.grade = car_to_sell->data.sales[modelID];
+    }
+
+    if(ourDS->best_c_seller.grade == car_to_sell->data.sales[modelID]){
+        if(typeID < ourDS->best_c_seller.carID){
+            ourDS->best_c_seller.carID = typeID;
+            ourDS->best_c_seller.grade = car_to_sell->data.sales[modelID];
+        } else if(typeID==ourDS->best_c_seller.carID && modelID<ourDS->best_c_seller.modelID){
+            ourDS->best_c_seller.modelID=modelID;
         }
-    if(ourDS->best_c_seller.second < car_to_sell->data.sales[modelID]){
-        ourDS->best_c_seller.first = typeID;
-        ourDS->best_c_seller.second = car_to_sell->data.sales[modelID];
+    }
+
+    if(ourDS->best_c_seller.grade < car_to_sell->data.sales[modelID]){
+        ourDS->best_c_seller.carID = typeID;
+        ourDS->best_c_seller.modelID=modelID;
+        ourDS->best_c_seller.grade = car_to_sell->data.sales[modelID];
     }
 
     //models tree & zeros tree update
@@ -85,7 +96,7 @@ StatusType CarDealershipManager::CDMSellCar(void *DS, int typeID, int modelID){
     if(zero_car!= nullptr){
         if(zero_car->data.models_vec[modelID] != nullptr){
             ImZero= true;
-             zero_car->data.modelG_list.remove(zero_car->data.models_vec[modelID]);
+            zero_car->data.modelG_list.remove(zero_car->data.models_vec[modelID]);
             zero_car->data.models_vec[modelID]= nullptr;
             if(zero_car->data.modelG_list.isEmpty())ourDS->zero_models->removeNode(typeID);
             ourDS->models_grades->insertNode(car_to_sell->data.models[modelID],car_to_sell->data.models[modelID]);
@@ -103,13 +114,13 @@ StatusType CarDealershipManager::CDMGetBestSellerModelByType(void *DS, int typeI
     if(DS==nullptr || typeID<0 || modelID==nullptr)return INVALID_INPUT;
     auto* CDM=(CarDealershipManager*)DS;
     if(typeID==0){
-        if(CDM->best_c_seller == std::make_pair(0,0))   return FAILURE; //empty system
-        *modelID= CDM->best_c_seller.first;
+        if(CDM->cars->root== nullptr)   return FAILURE; //empty system
+        *modelID= CDM->best_c_seller.modelID;
         return SUCCESS;
     }
     auto our_car = CDM->cars->findNode(typeID);
     if(our_car == nullptr)return FAILURE; // typeID car not in system
-    *modelID = our_car->data.best_m_seller.first;
+    *modelID = our_car->data.best_m_seller.modelID;
     return SUCCESS;
 }
 
@@ -157,6 +168,7 @@ StatusType CarDealershipManager::CDMGetWorstModels(void *DS, int numOfModels , i
     auto* CDM=(CarDealershipManager*)DS;
     auto father = CDM->models_grades->min;
     if(father== nullptr)return INVALID_INPUT;
+    if(CDM->models_number<numOfModels)return FAILURE;
     int cycles=numOfModels, i=0;
     bool doneZ= false;
 
@@ -168,7 +180,6 @@ StatusType CarDealershipManager::CDMGetWorstModels(void *DS, int numOfModels , i
         }
         father= father->parent;
     }while(father!= nullptr && cycles!= 0);
-    if(cycles!=0)return FAILURE;
     return SUCCESS;
 }
 

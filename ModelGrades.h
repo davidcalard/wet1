@@ -14,7 +14,7 @@ public:
 
     ModelGrades():grade(0),carID(0),modelID(0){};
 
-    ModelGrades(int carID, int modelID,int grade=0): carID(carID), modelID(modelID),grade(grade){}
+    ModelGrades(int carID, int modelID,int grade=0): grade(grade),carID(carID), modelID(modelID){}
     bool operator> (ModelGrades b) const{
         if(this->grade > b.grade)return true;
         else if (this->grade < b.grade)return false;
