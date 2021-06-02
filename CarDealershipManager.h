@@ -9,9 +9,36 @@
 #include "library.h"
 #include "AVLTree.h"
 #include "ModelGrades.h"
-
+#include "OrderedList.h"
 
 typedef int CarID,index,Sales_num,Grade;
+
+class ZeroCar{
+public:
+
+    OrderedListNode** models_vec;
+    OrderedList modelG_list;
+
+    ZeroCar(){};
+    ZeroCar(int n):models_vec(new OrderedListNode*[n]),modelG_list(OrderedList(n)){
+        auto iter=modelG_list.start;
+        for (int i = 0; i < n; ++i) {
+            models_vec[i]=iter;
+            iter=iter->next;
+        }
+    }
+    ZeroCar(const ZeroCar& cpy):models_vec(new OrderedListNode*[cpy.modelG_list.len]),modelG_list(OrderedList(cpy.modelG_list.len)){
+        auto iter=modelG_list.start;
+        for (int i = 0; i <modelG_list.len ; ++i) {
+            models_vec[i]=iter;
+            iter=iter->next;
+        }
+
+    }
+};
+
+
+
 class Car{
 public:
     int models_num; //num of models
@@ -54,10 +81,10 @@ public:
     AVLTree<ModelGrades,ModelGrades>* models_grades;
     std::pair<CarID ,Sales_num> best_c_seller = std::make_pair(0,0);
     AVLTree<CarID,Car>* cars;
-    AVLTree<CarID,AVLTree<ModelGrades,ModelGrades>>* zero_models;
+    AVLTree<CarID,ZeroCar>* zero_models;
 
     CarDealershipManager():models_grades(new AVLTree<ModelGrades,ModelGrades>()),
-    cars(new AVLTree<CarID,Car>()),zero_models(new AVLTree<CarID,AVLTree<ModelGrades,ModelGrades>>()){};
+    cars(new AVLTree<CarID,Car>()),zero_models(new AVLTree<CarID,ZeroCar>()){};
     ~CarDealershipManager(){
         if(models_grades) delete models_grades;
         if(cars) delete cars;

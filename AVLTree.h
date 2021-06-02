@@ -11,10 +11,10 @@
 #include <ostream>
 #include <algorithm>
 
+
 using std::max;
 using std::endl;
 using std::cout;
-
 
 /*------------------------------------------------------------------------------
 ------------------------------------AVLNode-------------------------------------
@@ -93,23 +93,12 @@ public:
     //print all nodes of the tree in ascending order
     void printTree();
 
-
-    void inOrder(AVLNode<Key,Data>* node,void (*func)(AVLNode<Key,Data>* node,int* arg1,int* arg2, int* i),
-            int* arg1,int* arg2,int *cycles, int* i){
+    void inOrder(AVLNode<Key,Data>* node,void (*func)(AVLNode<Key,Data>* node,int* arg1,int* arg2,int* i,int* cycles,bool* dz,void* cdm),
+                  int* arg1,int* arg2,int *cycles, int* i, bool* dz, void* cdm){
         if(node== nullptr || *cycles == 0)return;
-        inOrder(node->left,func, arg1,arg2,cycles, i);
-        *cycles-=1;
-        func(node,arg1,arg2, i);
-        inOrder(node->right,func, arg1,arg2,cycles, i);
-    }
-
-    int pow2(int n) {
-        int res=1;
-        while (n>0){
-            res*=2;
-            n--;
-        }
-        return res;
+        inOrder(node->left,func,arg1,arg2,cycles, i,dz,cdm);
+        func(node,arg1,arg2, i,cycles,dz,cdm);
+        inOrder(node->right,func,arg1,arg2,cycles, i,dz,cdm);
     }
 
 
@@ -137,6 +126,7 @@ public:
         return avLnode;
     }
 */
+/*
     void deleteForComplete(int* num_toDel) {
         if(this == nullptr ||  (*num_toDel)<=0)return;
         this->right->deleteForComplete(num_toDel);
@@ -154,7 +144,7 @@ public:
         this->left->deleteForComplete(num_toDel);
     }
 
-
+*/
 
 };
 
